@@ -1,0 +1,27 @@
+# step function
+SF=function(x) return(ifelse(x>=0,1,0))
+# survival function
+sWDSF=function(t,a,b,c,τ) return(exp(-(t/a)^(b+c*SF(t-τ)*(t-τ))))
+# CFF
+pWDSF=function(t,a,b,c,τ) return(1-exp(-(t/a)^(b+c*SF(t-τ)*(t-τ))))
+# FDF
+dWDSF=function(t,a,b,c,τ) return(((b+c*SF(t-τ)*(t-τ))/t+c*SF(t-τ)*log(t/a))
+      *(exp(-(t/a)^(b+c*SF(t-τ)*(t-τ))))/((t/a)^(-b-c*SF(t-τ)*(t-τ))))
+# hazard rate function
+hWDSF=function(t,a,b,c,τ) return(((b+c*SF(t-τ)*(t-τ))/t+c*SF(t-τ)*log(t/a))/
+      (t/a)^(-b-c*SF(t-τ)*(t-τ)))
+# hazard rate average function
+haWDSF=function(t,a,b,c,τ) return (1/t*(t/a)^(b+c*SF(t-τ)*(t-τ)))
+# quantile function
+qWDSF=function(p,a,b,c,τ){
+  u1 = function(t,a,b,c,τ) pWDSF(t,a,b,c,τ)-p
+  return(uniroot(u1, c(0,1e05), tol = 0.000001, a=a, b=b, c=c, τ=τ)$root) }
+# pseudo-random number generator
+rWDSF=function(n,a,b,c,τ){
+  x=numeric(n)
+  for (i in 1:n){
+    t=0; te=1; R=runif(1,0,1)
+    while (abs(te)>1e-10){
+      temp=t; t=a*(-log(R))^(1/(b+c*SF(t-τ)*(t-τ))); te=abs(t-temp)}
+    x[i]=t}
+  return(sort(x)) }
